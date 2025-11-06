@@ -1,12 +1,15 @@
-import { ScrollView, StyleSheet } from 'react-native';
+import { Button, ScrollView, StyleSheet } from 'react-native';
 
 import { HelloWave } from '@/components/hello-wave';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { api } from '@/lib/trpc-provider';
+import { authClient } from '../../lib/auth';
 
 export default function HomeScreen() {
   const { data: users, error } = api.user.getUsers.useQuery();
+  const { data: usersProtected, error: errorProtected } = api.user.getUsersProtected.useQuery();
+
 
 
   return (
@@ -23,8 +26,48 @@ export default function HomeScreen() {
         ))}
         {error && <ThemedText>{error.message}</ThemedText>}
       </ThemedView>
+      <ThemedView>
+        <ThemedText type="title">Protected Users</ThemedText>
+        {usersProtected?.map((user) => (
+          <ThemedText key={user.id}>{user.name}</ThemedText>
+        ))}
+        {errorProtected && <ThemedText>{errorProtected.message}</ThemedText>}
+      </ThemedView>
+
+      <SampleButtons />
     </ScrollView>
   );
+}
+
+function SampleButtons() {
+  const utils = api.useUtils();
+  const session = authClient.useSession();
+
+  function createUser() {
+    authClient.signUp.email({
+      email: "test" + Math.random() + "@example.com",
+      password: "password",
+      name: "Test User " + Math.random(),
+    });
+
+    utils.user.getUsers.invalidate();
+    utils.user.getUsersProtected.invalidate();
+  }
+
+
+  return (
+    <ThemedView>
+      <ThemedText type="title">Create User</ThemedText>
+      {session.data?.user ? (
+        <>
+          <ThemedText type="title">Signed in as {session.data.user.email}</ThemedText>
+          <Button title="Sign Out" onPress={() => authClient.signOut()} />
+        </>
+      ) : (
+        <Button title="Create User" onPress={createUser} />
+      )}
+    </ThemedView>
+  )
 }
 
 const styles = StyleSheet.create({

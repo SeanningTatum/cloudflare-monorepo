@@ -9,6 +9,7 @@ import superjson from 'superjson';
 
 import type { AppRouter } from '@jurni/trpc/routers/index.js';
 import { makeQueryClient } from '@jurni/trpc/query-client';
+import { authClient } from './auth';
 
 export const api = createTRPCReact<AppRouter>();
 
@@ -45,10 +46,10 @@ export function TRPCProvider(props: PropsWithChildren) {
             const headers = new Map<string, string>();
             headers.set('x-trpc-source', 'expo-react');
 
-            // const cookies = authClient.getCookie();
-            // if (cookies) {
-            //   headers.set('Cookie', cookies);
-            // }
+            const cookies = authClient.getCookie();
+            if (cookies) {
+              headers.set('Cookie', cookies);
+            }
             return Object.fromEntries(headers);
           },
         }),
