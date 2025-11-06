@@ -577,6 +577,36 @@ async function main() {
     process.exit(1);
   }
 
+  // Rename the mobile app directory if needed
+  const oldMobileAppPath = path.join(
+    __dirname,
+    "..",
+    "apps",
+    "{{appName}}-mobile"
+  );
+  const newMobileAppPath = path.join(
+    __dirname,
+    "..",
+    "apps",
+    `${appName}-mobile`
+  );
+
+  if (fs.existsSync(oldMobileAppPath)) {
+    console.log(
+      `\n\x1b[36mRenaming mobile app directory from {{appName}}-mobile to ${appName}-mobile...\x1b[0m`
+    );
+    try {
+      fs.renameSync(oldMobileAppPath, newMobileAppPath);
+      console.log(`\x1b[32m✓ Mobile directory renamed successfully\x1b[0m`);
+    } catch (error) {
+      console.error(
+        `\x1b[31m✗ Failed to rename mobile directory: ${error}\x1b[0m`
+      );
+      cancel("Operation cancelled.");
+      process.exit(1);
+    }
+  }
+
   // Generate resource names based on project name
   const dbName = `${projectName}-db`;
   const bucketName = `${projectName}-bucket`;
@@ -670,6 +700,67 @@ async function main() {
     projectName: sanitizeResourceName(projectName),
   };
   replaceHandlebarsInFile(dbPackageJsonPath, dbReplacements);
+
+  // Update mobile app files with project name
+  const mobileAppName = `${appName}-mobile`;
+
+  const mobilePackageJsonPath = path.join(
+    __dirname,
+    "..",
+    "apps",
+    mobileAppName,
+    "package.json"
+  );
+  if (fs.existsSync(mobilePackageJsonPath)) {
+    const mobileReplacements = {
+      projectName: sanitizeResourceName(projectName),
+    };
+    replaceHandlebarsInFile(mobilePackageJsonPath, mobileReplacements);
+  }
+
+  const mobileAppJsonPath = path.join(
+    __dirname,
+    "..",
+    "apps",
+    mobileAppName,
+    "app.json"
+  );
+  if (fs.existsSync(mobileAppJsonPath)) {
+    const mobileAppReplacements = {
+      projectName: sanitizeResourceName(projectName),
+    };
+    replaceHandlebarsInFile(mobileAppJsonPath, mobileAppReplacements);
+  }
+
+  const mobileAuthPath = path.join(
+    __dirname,
+    "..",
+    "apps",
+    mobileAppName,
+    "lib",
+    "auth.ts"
+  );
+  if (fs.existsSync(mobileAuthPath)) {
+    const mobileAuthReplacements = {
+      projectName: sanitizeResourceName(projectName),
+    };
+    replaceHandlebarsInFile(mobileAuthPath, mobileAuthReplacements);
+  }
+
+  // Update packages/auth/index.ts with project name
+  const authIndexPath = path.join(
+    __dirname,
+    "..",
+    "packages",
+    "auth",
+    "index.ts"
+  );
+  if (fs.existsSync(authIndexPath)) {
+    const authReplacements = {
+      projectName: sanitizeResourceName(projectName),
+    };
+    replaceHandlebarsInFile(authIndexPath, authReplacements);
+  }
 
   // Regenerate lockfile with clean state
   console.log("\n\x1b[36m🔄 Regenerating lockfile...\x1b[0m");

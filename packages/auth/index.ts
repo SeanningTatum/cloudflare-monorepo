@@ -3,6 +3,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { getDb } from "@repo/db";
 import * as schema from "@repo/db/schema";
 import { admin } from "better-auth/plugins";
+import { expo } from "@better-auth/expo";
 
 export async function createAuth(
   database: ReturnType<typeof getDb>,
@@ -18,11 +19,7 @@ export async function createAuth(
       schema,
     }),
     secret: options.secret,
-    // trustedOrigins: [
-    //   "expo://",
-    //   "http://localhost:3001",
-    //   "http://localhost:3000",
-    // ],
+    trustedOrigins: ["{{projectName}}://"],
     onAPIError: {
       onError(error, ctx) {
         console.error("BETTER AUTH API ERROR", error, ctx);
@@ -31,7 +28,7 @@ export async function createAuth(
     emailAndPassword: {
       enabled: true,
     },
-    plugins: [admin()],
+    plugins: [admin(), expo()],
   });
 }
 

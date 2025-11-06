@@ -8,8 +8,8 @@ export const authClient = createAuthClient({
   baseURL: "http://localhost:3000",
   plugins: [
     expoClient({
-      scheme: "expo",
-      storagePrefix: "expo",
+      scheme: "{{projectName}}",
+      storagePrefix: "{{projectName}}",
       storage: SecureStore,
     }),
   ],
