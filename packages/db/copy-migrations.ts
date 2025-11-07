@@ -70,3 +70,4 @@ try {
   console.error(`❌ Error copying migrations:`, error);
   process.exit(1);
 }
+

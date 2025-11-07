@@ -28,7 +28,7 @@ export default {
   async fetch(request, env, ctx) {
     const database = getDb(env.DATABASE);
 
-    const auth = await createAuth(database, {
+    const auth = await createAuth(env.DATABASE, {
       secret: env.BETTER_AUTH_SECRET,
     });
 

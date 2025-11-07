@@ -1,34 +1,34 @@
-import { betterAuth } from "better-auth";
+import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { getDb } from "@repo/db";
-import * as schema from "@repo/db/schema";
+import { getDb } from "@expo-with-mobile/db";
+import * as schema from "@expo-with-mobile/db/schema";
 import { admin } from "better-auth/plugins";
 import { expo } from "@better-auth/expo";
+import type { D1Database } from "@cloudflare/workers-types";
 
-export async function createAuth(
-  database: ReturnType<typeof getDb>,
-  options: {
-    // baseUrl: string;
-    productionUrl?: string;
-    secret: string;
-  }
-) {
+export const authConfig = {
+  emailAndPassword: {
+    enabled: true,
+  },
+  plugins: [admin(), expo()],
+} satisfies BetterAuthOptions;
+
+export async function createAuth(database: D1Database, secret: string) {
+  const db = getDb(database);
+
   return betterAuth({
-    database: drizzleAdapter(database, {
+    database: drizzleAdapter(db, {
       provider: "sqlite",
       schema,
     }),
-    secret: options.secret,
-    trustedOrigins: ["{{projectName}}://"],
+    secret,
+    trustedOrigins: ["expo-with-mobile://"],
     onAPIError: {
       onError(error, ctx) {
         console.error("BETTER AUTH API ERROR", error, ctx);
       },
     },
-    emailAndPassword: {
-      enabled: true,
-    },
-    plugins: [admin(), expo()],
+    ...authConfig,
   });
 }
 
